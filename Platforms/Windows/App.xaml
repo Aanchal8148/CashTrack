@@ -1,0 +1,8 @@
+﻿<maui:MauiWinUIApplication
+    x:Class="Cashtrack_22068934.WinUI.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:maui="using:Microsoft.Maui"
+    xmlns:local="using:Cashtrack_22068934.WinUI">
+
+</maui:MauiWinUIApplication>
