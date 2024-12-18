@@ -1,0 +1,8 @@
+C:\Users\Aachal\source\repos\CashTrack_22068934\CashTrack_22068934\wwwroot\css\app.css
+C:\Users\Aachal\source\repos\CashTrack_22068934\CashTrack_22068934\wwwroot\css\bootstrap\bootstrap.min.css
+C:\Users\Aachal\source\repos\CashTrack_22068934\CashTrack_22068934\wwwroot\index.html
+C:\Users\Aachal\source\repos\CashTrack_22068934\CashTrack_22068934\wwwroot\css\bootstrap\bootstrap.min.css.map
+wwwroot\css\app.css
+wwwroot\css\bootstrap\bootstrap.min.css
+wwwroot\css\bootstrap\bootstrap.min.css.map
+wwwroot\index.html
