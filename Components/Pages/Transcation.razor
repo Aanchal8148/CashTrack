@@ -1,0 +1,158 @@
+﻿@page "/transaction"
+@using System.Text.Json
+
+<h3>Add Transaction</h3>
+
+<EditForm Model="transaction" OnValidSubmit="AddTransaction">
+    <div>
+        <label>Transaction ID:</label>
+        <br />
+        <InputText @bind-Value="transaction.TransactionId" /> <br />
+    </div>
+
+    <div>
+        <label>Name:</label>
+        <br />
+        <InputText @bind-Value="transaction.Name" /> <br />
+    </div>
+
+    <div>
+        <label>Title:</label>
+        <br />
+        <InputText @bind-Value="transaction.Title" /> <br />
+    </div>
+
+    <div>
+        <label>Amount:</label>
+        <br />
+        <InputNumber TValue="decimal" @bind-Value="transaction.Amount" /> <br />
+    </div>
+
+    <div>
+        <label>Transaction Type:</label>
+        <InputSelect TValue="string" @bind-Value="transaction.TransactionType">
+            <option value="">--Select--</option>
+            <option value="Debit">Debit</option>
+            <option value="Credit">Credit</option>
+        </InputSelect>
+        <br />
+    </div>
+
+    <div>
+        <label>Notes:</label>
+        <InputText @bind-Value="transaction.Notes" />
+    </div>
+    <br />
+    <button type="submit" class="btn-submit">Submit Transaction</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(message))
+{
+            <p>@message</p>
+}
+
+@code {
+    private TransactionModel transaction = new TransactionModel();
+    private List<TransactionModel> transactions = new List<TransactionModel>();
+    private string message = string.Empty;
+
+    private void AddTransaction()
+    {
+        if (string.IsNullOrEmpty(transaction.TransactionType))
+        {
+            message = "Please select a transaction type.";
+            return;
+        }
+
+        transactions.Add(transaction);
+        message = "Transaction added successfully.";
+        transaction = new TransactionModel(); // Reset the form after adding a transaction
+        SaveTransactionsToFile();
+    }
+
+    private void SaveTransactionsToFile()
+    {
+        var json = JsonSerializer.Serialize(transactions);
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "transactions.json");
+        File.WriteAllText(path, json);
+    }
+
+    protected override void OnInitialized()
+    {
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "transactions.json");
+        if (File.Exists(path))
+        {
+            var json = File.ReadAllText(path);
+            transactions = JsonSerializer.Deserialize<List<TransactionModel>>(json) ?? new List<TransactionModel>();
+        }
+    }
+
+    public class TransactionModel
+    {
+        public string TransactionId { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public decimal Amount { get; set; }
+        public string TransactionType { get; set; } = string.Empty; // Debit or Credit
+        public string Notes { get; set; } = string.Empty;
+    }
+}
+<style>
+
+
+    h3 {
+        text-align: center;
+        font-family: Arial, sans-serif;
+        color: #333;
+    }
+
+    form {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: gray;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+        font-family: Arial, sans-serif;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+    }
+
+    button.btn-submit {
+        width: 100%;
+        padding: 10px;
+        background-color: green;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        font-family: Arial, sans-serif;
+    }
+
+        button.btn-submit:hover {
+            background-color: #0056b3;
+        }
+
+    p {
+        text-align: center;
+        color: green;
+        font-size: 14px;
+        margin-top: 10px;
+    }
+</style>

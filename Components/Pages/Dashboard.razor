@@ -1,0 +1,226 @@
+﻿@page "/dashboard"
+@using System.Text.Json
+
+<h3>Transaction Dashboard</h3>
+
+<!-- Summary Section -->
+<div id="summary-section">
+    <div class="summary-box">
+        <h4>Total Income</h4>
+        <p>@TotalIncome.ToString("C")</p>
+    </div>
+    <div class="summary-box">
+        <h4>Total Expense</h4>
+        <p>@TotalExpense.ToString("C")</p>
+    </div>
+    <div class="summary-box">
+        <h4>Total Debt</h4>
+        <p>@TotalDebt.ToString("C")</p>
+    </div>
+</div>
+
+<!-- Transactions Table -->
+<div id="transaction-dashboard">
+    @if (transactions.Count == 0)
+
+
+
+    {
+            <p>No transactions to display.</p>
+    }
+
+
+
+    else
+
+
+
+    {
+            <table>
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Name</th>
+                        <th>Title</th>
+                        <th>Amount</th>
+                        <th>Type</th>
+                        <th>Notes</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var txn in transactions)
+
+
+
+                {
+                            <tr>
+                                <td>@txn.TransactionId</td>
+                                <td>@txn.Name</td>
+                                <td>@txn.Title</td>
+                                <td>@txn.Amount</td>
+                                <td>@txn.TransactionType</td>
+                                <td>@txn.Notes</td>
+                                <td>@txn.Date.ToShortDateString()</td>
+                            </tr>
+                }
+                </tbody>
+            </table>
+    }
+</div>
+
+@code {
+    private List<TransactionModel> transactions = new List<TransactionModel>();
+
+
+
+
+
+
+
+    // Total calculations
+
+
+
+    private decimal TotalIncome => transactions.Where(t => t.TransactionType == "Credit").Sum(t => t.Amount);
+
+
+
+    private decimal TotalExpense => transactions.Where(t => t.TransactionType == "Debit").Sum(t => t.Amount);
+
+
+
+    private decimal TotalDebt => TotalExpense - TotalIncome;
+
+
+
+
+
+
+
+    protected override void OnInitialized()
+
+
+
+    {
+
+
+
+        var path = Path.Combine(FileSystem.AppDataDirectory, "transactions.json");
+
+
+
+        if (File.Exists(path))
+
+
+
+        {
+
+
+
+            var json = File.ReadAllText(path);
+
+
+
+            transactions = JsonSerializer.Deserialize<List<TransactionModel>>(json) ?? new List<TransactionModel>();
+
+
+
+
+
+
+
+            // Ensure no null properties
+
+
+
+            foreach (var txn in transactions)
+
+
+
+            {
+
+
+
+                txn.TransactionId ??= "Unknown";
+
+
+
+                txn.Name ??= "Unnamed";
+
+
+
+                txn.Title ??= string.Empty;
+
+
+
+                txn.Notes ??= string.Empty;
+
+
+
+                txn.TransactionType ??= "Unknown";
+
+
+
+                txn.Date = txn.Date == default ? DateTime.Now : txn.Date;
+
+
+
+            }
+
+
+
+        }
+
+
+
+    }
+
+
+
+
+
+
+
+    // TransactionModel class with default values
+
+
+
+    public class TransactionModel
+
+
+
+    {
+
+
+
+        public string TransactionId { get; set; } = "Unknown";
+
+
+
+        public string Name { get; set; } = "Unnamed";
+
+
+
+        public string Title { get; set; } = string.Empty;
+
+
+
+        public decimal Amount { get; set; } = 0;
+
+
+
+        public string TransactionType { get; set; } = "Unknown";
+
+
+
+        public string Notes { get; set; } = string.Empty;
+
+
+
+        public DateTime Date { get; set; } = DateTime.Now;
+
+
+
+    }
+}

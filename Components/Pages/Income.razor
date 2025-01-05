@@ -1,0 +1,193 @@
+﻿@page "/income"
+@using System.Text.Json
+
+<h3>Total Income</h3>
+
+<!-- Search and Filter Options -->
+<div class="search-filter">
+    <input type="text" @bind="searchQuery" placeholder="Search by Name" class="form-control" />
+    <input type="date" @bind="selectedDate" class="form-control" />
+    <button @onclick="SortByDate" class="btn-sort">Sort by Date</button>
+</div>
+
+<!-- Transactions Table -->
+<div id="income-dashboard">
+    @if (filteredIncomeTransactions.Count == 0)
+    {
+            <p>No income transactions to display.</p>
+    }
+    else
+    {
+            <table>
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Name</th>
+                        <th>Amount</th>
+                        <th>Transaction Type</th>
+                        <th>Notes</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var txn in filteredIncomeTransactions)
+                {
+                            <tr>
+                                <td>@txn.TransactionId</td>
+                                <td>@txn.Name</td>
+                                <td>@txn.Amount</td>
+                                <td>@txn.TransactionType</td>
+                                <td>@txn.Notes</td>
+                                <td>@txn.Date.ToShortDateString()</td>
+                            </tr>
+                }
+                </tbody>
+            </table>
+    }
+</div>
+
+@code {
+    private List<TransactionModel> transactions = new List<TransactionModel>();
+    private string searchQuery = string.Empty;
+    private DateTime? selectedDate = null;
+    private bool sortDescending = true; // Start with descending order for date
+
+    // Filtered income transactions
+    private List<TransactionModel> filteredIncomeTransactions
+    {
+        get
+        {
+            // Filter transactions where the type is "Credit", matches the search query, and the selected date
+            var filtered = transactions
+                .Where(t => t.TransactionType.Equals("Credit", StringComparison.OrdinalIgnoreCase) &&
+                            (string.IsNullOrEmpty(searchQuery) || t.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)) &&
+                            (!selectedDate.HasValue || t.Date.Date == selectedDate.Value.Date))
+                .ToList();
+
+            // Sort by date based on the sortDescending flag
+            return sortDescending
+                ? filtered.OrderByDescending(t => t.Date).ToList()
+                : filtered.OrderBy(t => t.Date).ToList();
+        }
+    }
+
+    // Toggle sorting by date
+    private void SortByDate()
+    {
+        sortDescending = !sortDescending; // Toggle sorting order
+    }
+
+    protected override void OnInitialized()
+    {
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "transactions.json");
+
+        if (File.Exists(path))
+        {
+            var json = File.ReadAllText(path);
+            transactions = JsonSerializer.Deserialize<List<TransactionModel>>(json) ?? new List<TransactionModel>();
+
+            // Ensure no null properties
+            foreach (var txn in transactions)
+            {
+                txn.TransactionId ??= "Unknown";
+                txn.Name ??= "Unnamed";
+                txn.Notes ??= string.Empty;
+                txn.TransactionType ??= "Unknown";
+                txn.Date = txn.Date == default ? DateTime.Now : txn.Date;
+            }
+        }
+    }
+
+    // Transaction model
+    public class TransactionModel
+    {
+        public string TransactionId { get; set; } = "Unknown";
+        public string Name { get; set; } = "Unnamed";
+        public decimal Amount { get; set; } = 0;
+        public string TransactionType { get; set; } = "Unknown"; // Debit or Credit
+        public string Notes { get; set; } = string.Empty;
+        public DateTime Date { get; set; } = DateTime.Now;
+    }
+}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f9;
+        color: #333;
+    }
+
+    h3 {
+        text-align: center;
+        margin: 20px 0;
+        font-size: 24px;
+        font-weight: bold;
+        color: #444;
+    }
+
+    .search-filter {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 20px auto;
+        max-width: 800px;
+    }
+
+    .form-control {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 14px;
+        width: 200px;
+    }
+
+    .btn-sort {
+        padding: 10px 15px;
+        background-color: #e9b0f5;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+        .btn-sort:hover {
+            background-color: #0056b3;
+        }
+
+    #income-dashboard table {
+        width: 90%;
+        margin: 20px auto;
+        border-collapse: collapse;
+        background-color: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    #income-dashboard th, #income-dashboard td {
+        border: 1px solid #ddd;
+        padding: 12px;
+        text-align: left;
+    }
+
+    #income-dashboard th {
+        background-color: #;
+        color: white;
+        text-transform: uppercase;
+        font-size: 14px;
+    }
+
+    #income-dashboard tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    #income-dashboard tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    p {
+        text-align: center;
+        color: #888;
+        font-size: 16px;
+    }
+</style>
